@@ -1,3 +1,10 @@
+# Basic Usage
+
+> In the following example we will going to use a simple image picker.
+
+main.dart
+
+```dart
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -12,7 +19,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   List<Asset> images = List<Asset>();
-  String _error = 'No Error Dectected';
+  String _error;
 
   @override
   void initState() {
@@ -20,38 +27,33 @@ class _MyAppState extends State<MyApp> {
   }
 
   Widget buildGridView() {
-    return GridView.count(
-      crossAxisCount: 3,
-      children: List.generate(images.length, (index) {
-        Asset asset = images[index];
-        return AssetThumb(
-          asset: asset,
-          width: 300,
-          height: 300,
-        );
-      }),
-    );
+    if (images != null)
+      return GridView.count(
+        crossAxisCount: 3,
+        children: List.generate(images.length, (index) {
+          Asset asset = images[index];
+          return AssetThumb(
+            asset: asset,
+            width: 300,
+            height: 300,
+          );
+        }),
+      );
+    else
+      return Container(color: Colors.white);
   }
 
   Future<void> loadAssets() async {
-    List<Asset> resultList = List<Asset>();
-    String error = 'No Error Dectected';
+    setState(() {
+      images = List<Asset>();
+    });
+
+    List<Asset> resultList;
+    String error;
 
     try {
       resultList = await MultiImagePicker.pickImages(
-        maxImages: 3,
-        enableCamera: true,
-        selectedAssets: images,
-        imageLimitedAlertButtonTitle: "ButtonTitle",
-        imageLimitedAlertMessage: "Message",
-        cupertinoOptions: CupertinoOptions(takePhotoIcon: "chat"),
-        materialOptions: MaterialOptions(
-          actionBarColor: "#abcdef",
-          actionBarTitle: "Example App",
-          allViewTitle: "All Photos",
-          useDetailsView: false,
-          selectCircleStrokeColor: "#000000",
-        ),
+        maxImages: 300,
       );
     } on Exception catch (e) {
       error = e.toString();
@@ -64,7 +66,7 @@ class _MyAppState extends State<MyApp> {
 
     setState(() {
       images = resultList;
-      _error = error;
+      if (error == null) _error = 'No Error Dectected';
     });
   }
 
@@ -91,3 +93,10 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
+```
+
+In the above example we've created a simple StatefulWidget with a button. When the button is pressed we 
+invoke the image picker, specifying the maximum allowed number if images to be picked. The `pickImages`
+method is asynchronious and returns array of `Asset` objects after the user makes their selection.
+
+Once we have the `Asset` Objects, we can then display a preview of the picked images in a grid.
